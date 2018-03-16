@@ -32,16 +32,16 @@ def validate(fold_name, fold_data, fold_file, val_batch_size=1024):
 def build_text_only_network(d_word, d_hidden, lr, eps=1e-6):
 
     # input theano vars
-    in_context_fc7 = T.tensor3(name='context_images')
-    in_context_bb = T.tensor4(name='context_bb')
-    in_bbmask = T.tensor3(name='bounding_box_mask')
-    in_context = T.itensor4(name='context')
-    in_cmask = T.tensor4(name='context_mask')
-    in_answer_fc7 = T.matrix(name='answer_images')
-    in_answer_bb = T.matrix(name='answer_bb')
-    in_answers = T.itensor3(name='answers')
-    in_amask = T.tensor3(name='answer_mask')
-    in_labels = T.imatrix(name='labels')
+    in_context_fc7 = T.tensor3(name='context_images') # bsz x 3 x 4096 (because 3 context panels, fc7 features each of dim 4096)
+    in_context_bb = T.tensor4(name='context_bb') # bsz x 3 x 3 x 4 (because 3 context panels, each contains a max of 3 speech boxes, each box described by 4 coordinates) 
+    in_bbmask = T.tensor3(name='bounding_box_mask') # bsz x 3 x 3 (because 3 context panels, each contains a max of 3 speech boxes, the mask has an entry of 1 in the ith position if the panel contains the ith speech box)
+    in_context = T.itensor4(name='context') # bsz x 3 x 3 x 30 (because 3 context panels, each contains a max of 3 speech boxes, each box contains speech with a max of 30 words)
+    in_cmask = T.tensor4(name='context_mask') # bsz x 3 x 3 x 30 (because 3 context panels, each contains a max of 3 speech boxes, each box contains speech with a max of 30 words, where the mask has an entry of 1 in the ith position if the ith word exists in the speech)
+    in_answer_fc7 = T.matrix(name='answer_images') # bsz x 4096 (fc7 feature for the panel for which we want to guess the speech)
+    in_answer_bb = T.matrix(name='answer_bb') # bsz x 4 (the answer panel has one speech box described by 4 coordinates)
+    in_answers = T.itensor3(name='answers') # bsz x 3 x 30 (3 candidate answers each of max 30 words )
+    in_amask = T.tensor3(name='answer_mask') # bsz x 3 x 30 (mask for 3 candidates answers, ie, an entry of 1 in the ith position if the ith word exists in the candidate)
+    in_labels = T.imatrix(name='labels') # bsz x 3 (out of 3 candidate answers, the correct answer will have a 1)
 
     # define network
     l_context_fc7 = lasagne.layers.InputLayer(shape=(None, 3, 4096), input_var=in_context_fc7)
